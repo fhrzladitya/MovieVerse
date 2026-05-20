@@ -471,26 +471,11 @@ function Home({ theme, language, activePage, onNavigate }) {
   const [scrollY, setScrollY] = useState(0);
   const [pageTransition, setPageTransition] = useState(false);
 
-  // STATE BARU UNTUK ANIMASI SPLASH REFRESH
-  const [isRefreshing, setIsRefreshing] = useState(true);
-
-  // EFEK SAAT PERTAMA KALI COMPONENT DI-MOUNT (FRESH LOAD/REFRESH)
-  useEffect(() => {
-    // 1. Paksa scroll ke atas banget setiap kali di refresh
-    window.scrollTo(0, 0);
-
-    // 2. Set timer untuk animasi loading (1.2 detik)
-    const timer = setTimeout(() => {
-      setIsRefreshing(false);
-    }, 1200);
-
-    return () => clearTimeout(timer);
-  }, []);
-
   useEffect(() => {
     if (activePage !== "api" || apiFetched) return;
 
     let isMounted = true;
+
     setApiLoading(true);
 
     const minimumLoadingTime = new Promise((resolve) =>
@@ -503,16 +488,19 @@ function Home({ theme, language, activePage, onNavigate }) {
     ])
       .then(([response]) => {
         if (!isMounted) return;
+
         setApiItems(response.data.slice(0, 10));
         setApiError(false);
       })
       .catch(() => {
         if (!isMounted) return;
+
         setApiItems(fallbackShows);
         setApiError(true);
       })
       .finally(() => {
         if (!isMounted) return;
+
         setApiLoading(false);
         setApiFetched(true);
       });
@@ -564,6 +552,7 @@ function Home({ theme, language, activePage, onNavigate }) {
 
     setTimeout(() => {
       onNavigate(page);
+
       window.scrollTo({
         top: 0,
         behavior: "smooth",
@@ -579,8 +568,25 @@ function Home({ theme, language, activePage, onNavigate }) {
     const handleScroll = () => {
       setScrollY(window.scrollY);
     };
+
     window.addEventListener("scroll", handleScroll);
+
     return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useEffect(() => {
+    if ("scrollRestoration" in window.history) {
+      window.history.scrollRestoration = "manual";
+    }
+
+    window.scrollTo(0, 80);
+
+    setTimeout(() => {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+    }, 100);
   }, []);
 
   const genres = useMemo(
@@ -634,553 +640,512 @@ function Home({ theme, language, activePage, onNavigate }) {
   const subtleText = isDark ? "text-gray-400" : "text-slate-500";
 
   return (
-    <>
-      {/* SPLASH SCREEN LOADING (Jalan setiap kali app di-refresh) */}
-      {isRefreshing && (
-        <div
-          className={`fixed inset-0 z-[200] flex flex-col items-center justify-center transition-opacity duration-300 ${
-            isDark ? "bg-[#050505]" : "bg-[#f3f4f6]"
-          }`}
-        >
-          <div className="animate-pulse flex flex-col items-center">
-            <h1 className="text-4xl md:text-6xl font-extrabold bg-gradient-to-r from-red-500 via-orange-400 to-yellow-300 bg-clip-text text-transparent">
-              MovieVerse
-            </h1>
-            <p
-              className={`mt-4 text-sm font-bold tracking-widest ${
-                isDark ? "text-gray-400" : "text-slate-500"
-              }`}
-            >
-              LOADING...
-            </p>
-          </div>
-        </div>
-      )}
+    <main
+      className={`
+    min-h-screen overflow-hidden
+    transition-transform transition-opacity duration-500 ease-[cubic-bezier(.22,1,.36,1)] duration-500 ease-[cubic-bezier(.22,1,.36,1)]
+    ${
+      pageTransition
+        ? "opacity-0 translate-y-4 scale-[0.985]"
+        : "opacity-100 translate-y-0 scale-100"
+    }
+    ${pageBackground}
+  `}
+    >
+      <div className="fixed inset-0 overflow-hidden -z-10">
+        <div className="absolute top-0 left-0 w-[360px] h-[360px] bg-red-500/20 blur-3xl rounded-full"></div>
+        <div className="absolute bottom-0 right-0 w-[360px] h-[360px] bg-yellow-500/20 blur-3xl rounded-full"></div>
+      </div>
 
-      <main
-        className={`
-          min-h-screen overflow-hidden
-          transition-transform transition-opacity duration-500 ease-[cubic-bezier(.22,1,.36,1)]
-          ${
-            pageTransition || isRefreshing
-              ? "opacity-0 translate-y-4 scale-[0.985]"
-              : "opacity-100 translate-y-0 scale-100"
-          }
-          ${pageBackground}
-        `}
-      >
-        <div className="fixed inset-0 overflow-hidden -z-10">
-          <div className="absolute top-0 left-0 w-[360px] h-[360px] bg-red-500/20 blur-3xl rounded-full"></div>
-          <div className="absolute bottom-0 right-0 w-[360px] h-[360px] bg-yellow-500/20 blur-3xl rounded-full"></div>
-        </div>
-
-        {activePage === "home" && (
-          <section className="max-w-7xl mx-auto px-5 pt-0 pb-14">
+      {activePage === "home" && (
+        <section className="max-w-7xl mx-auto px-5 pt-0 pb-14">
+          <div
+            ref={heroRef}
+            className={`
+    relative
+    min-h-[720px]
+    overflow-hidden
+    rounded-b-[2.5rem]
+    border
+    shadow-2xl
+    transition-transform transition-opacity
+    duration-500
+    ${isDark ? "border-white/10 bg-black" : "border-slate-200 bg-white"}
+  `}
+          >
             <div
-              ref={heroRef}
-              className={`
-                relative
-                min-h-[720px]
-                overflow-hidden
-                rounded-b-[2.5rem]
-                border
-                shadow-2xl
-                transition-transform transition-opacity
-                duration-500
-                ${isDark ? "border-white/10 bg-black" : "border-slate-200 bg-white"}
-              `}
+              className="absolute inset-0 scale-110"
+              style={{
+                transform: `translateY(${scrollY * 0.35}px) scale(1.12)`,
+                transition: "transform .1s linear",
+              }}
             >
-              <div
-                className="absolute inset-0 scale-110"
-                style={{
-                  transform: `translateY(${scrollY * 0.35}px) scale(1.12)`,
-                  transition: "transform .1s linear",
-                }}
+              <img
+                src={featuredMovie.image.original}
+                alt={featuredMovie.name}
+                className="
+        h-full
+        w-full
+        object-cover
+        opacity-70
+        animate-[heroZoom_18s_ease-in-out_infinite_alternate]
+      "
+              />
+            </div>
+
+            <div
+              className={`
+      absolute inset-0
+      ${
+        isDark
+          ? "bg-gradient-to-r from-black via-black/80 to-black/20"
+          : "bg-gradient-to-r from-white via-white/70 to-white/10"
+      }
+    `}
+            ></div>
+
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+
+            <div
+              className="
+      absolute
+      -left-20
+      top-10
+      h-[320px]
+      w-[320px]
+      rounded-full
+      bg-red-500/20
+      blur-3xl
+    "
+            ></div>
+
+            <div
+              className="
+      absolute
+      bottom-0
+      right-0
+      h-[320px]
+      w-[320px]
+      rounded-full
+      bg-yellow-500/20
+      blur-3xl
+    "
+            ></div>
+
+            <div className="relative z-10 flex min-h-[720px] max-w-3xl flex-col justify-end px-6 py-14 md:px-14">
+              <span
+                className="
+        mb-5
+        w-fit
+        rounded-full
+        border
+        border-yellow-400/30
+        bg-yellow-400/10
+        px-5
+        py-2
+        text-xs
+        font-extrabold
+        uppercase
+        tracking-[0.25em]
+        text-yellow-300
+        backdrop-blur-xl
+      "
               >
-                <img
-                  src={featuredMovie.image.original}
-                  alt={featuredMovie.name}
-                  className="
-                    h-full
-                    w-full
-                    object-cover
-                    opacity-70
-                    animate-[heroZoom_18s_ease-in-out_infinite_alternate]
-                  "
-                />
-              </div>
+                {text.featured}
+              </span>
 
-              <div
+              {/* TITLE */}
+              <h1
                 className={`
-                  absolute inset-0
-                  ${
-                    isDark
-                      ? "bg-gradient-to-r from-black via-black/80 to-black/20"
-                      : "bg-gradient-to-r from-white via-white/70 to-white/10"
-                  }
-                `}
-              ></div>
+        mb-5
+        text-5xl
+        font-black
+        leading-none
+        tracking-tight
+        drop-shadow-2xl
+        md:text-8xl
+        ${isDark ? "text-white" : "text-slate-950"}
+      `}
+              >
+                {featuredMovie.name}
+              </h1>
 
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
-
-              <div
-                className="
-                  absolute
-                  -left-20
-                  top-10
-                  h-[320px]
-                  w-[320px]
-                  rounded-full
-                  bg-red-500/20
-                  blur-3xl
-                "
-              ></div>
-
-              <div
-                className="
-                  absolute
-                  bottom-0
-                  right-0
-                  h-[320px]
-                  w-[320px]
-                  rounded-full
-                  bg-yellow-500/20
-                  blur-3xl
-                "
-              ></div>
-
-              <div className="relative z-10 flex min-h-[720px] max-w-3xl flex-col justify-end px-6 py-14 md:px-14">
-                <span
-                  className="
-                    mb-5
-                    w-fit
-                    rounded-full
-                    border
-                    border-yellow-400/30
-                    bg-yellow-400/10
-                    px-5
-                    py-2
-                    text-xs
-                    font-extrabold
-                    uppercase
-                    tracking-[0.25em]
-                    text-yellow-300
-                    backdrop-blur-xl
-                  "
-                >
-                  {text.featured}
+              {/* GENRES */}
+              <div className="mb-6 flex flex-wrap items-center gap-3">
+                <span className="rounded-full bg-yellow-400 px-5 py-2 text-sm font-extrabold text-black shadow-xl">
+                  {text.rating} {featuredMovie.rating.average}
                 </span>
 
-                <h1
-                  className={`
-                    mb-5
-                    text-5xl
-                    font-black
-                    leading-none
-                    tracking-tight
-                    drop-shadow-2xl
-                    md:text-8xl
-                    ${isDark ? "text-white" : "text-slate-950"}
-                  `}
-                >
-                  {featuredMovie.name}
-                </h1>
-
-                <div className="mb-6 flex flex-wrap items-center gap-3">
-                  <span className="rounded-full bg-yellow-400 px-5 py-2 text-sm font-extrabold text-black shadow-xl">
-                    {text.rating} {featuredMovie.rating.average}
-                  </span>
-
-                  {featuredMovie.genres.map((genre) => (
-                    <span
-                      key={genre}
-                      className={`
-                        rounded-full
-                        px-5
-                        py-2
-                        text-sm
-                        font-semibold
-                        backdrop-blur-xl
-                        ${isDark ? "bg-white/10 text-white" : "bg-black/10 text-slate-900"}
-                      `}
-                    >
-                      {getGenreLabel(genre)}
-                    </span>
-                  ))}
-                </div>
-
-                <p
-                  className={`
-                    mb-8
-                    max-w-2xl
-                    text-base
-                    leading-relaxed
-                    md:text-xl
-                    ${isDark ? "text-gray-200" : "text-slate-700"}
-                  `}
-                >
-                  {text.summaries[featuredMovie.name]}
-                </p>
-
-                <div className="flex flex-wrap gap-4">
-                  <button
-                    type="button"
-                    onClick={() => setSelectedMovie(featuredMovie)}
-                    className="
-                      rounded-full
-                      bg-gradient-to-r
-                      from-red-500
-                      via-orange-500
-                      to-yellow-400
-                      px-8
-                      py-4
-                      text-sm
-                      font-extrabold
-                      text-white
-                      shadow-2xl
-                      shadow-red-500/30
-                      transition-transform transition-opacity
-                      duration-300
-                      hover:scale-110
-                      hover:shadow-red-500/50
-                    "
-                  >
-                    {text.watchTrailer}
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleNavigate("movies")}
+                {featuredMovie.genres.map((genre) => (
+                  <span
+                    key={genre}
                     className={`
-                      rounded-full
-                      border
-                      px-8
-                      py-4
-                      text-sm
-                      font-bold
-                      backdrop-blur-xl
-                      transition-transform transition-opacity
-                      duration-300
-                      hover:scale-105
-                      ${
-                        isDark
-                          ? "border-white/20 bg-white/10 text-white hover:bg-white/20"
-                          : "border-slate-300 bg-white/70 text-slate-900 hover:bg-white"
-                      }
-                    `}
+            rounded-full
+            px-5
+            py-2
+            text-sm
+            font-semibold
+            backdrop-blur-xl
+            ${isDark ? "bg-white/10 text-white" : "bg-black/10 text-slate-900"}
+          `}
                   >
-                    {text.openMovies}
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div className="py-14 text-center">
-              <h2 className="mb-4 bg-gradient-to-r from-red-500 via-yellow-400 to-orange-500 bg-clip-text text-4xl font-extrabold text-transparent md:text-6xl">
-                MovieVerse
-              </h2>
-
-              <p
-                className={`mx-auto max-w-3xl text-lg leading-relaxed md:text-xl ${mutedText}`}
-              >
-                {text.heroDescription}
-              </p>
-            </div>
-
-            <div className="mb-12 grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
-              <InfoCard
-                value="15+"
-                label={text.totalMovies}
-                color="text-yellow-400"
-                className={cardClass}
-              />
-              <InfoCard
-                value="HD"
-                label={text.officialTrailer}
-                color="text-red-400"
-                className={cardClass}
-              />
-              <InfoCard
-                value={text.freeShort}
-                label={text.freeAccess}
-                color="text-green-400"
-                className={cardClass}
-              />
-            </div>
-
-            <div>
-              <div className="mb-7 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-                <div>
-                  <p
-                    className={`mb-2 text-sm font-bold uppercase tracking-[0.25em] ${isDark ? "text-red-300" : "text-red-500"}`}
-                  >
-                    {text.explore}
-                  </p>
-                  <h2 className="text-3xl font-extrabold md:text-4xl">
-                    {text.popularThisWeek}
-                  </h2>
-                </div>
-                <p className={`max-w-xl text-sm leading-relaxed ${subtleText}`}>
-                  {text.trendingSubtitle}
-                </p>
-              </div>
-
-              <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-                {trendingMovies.map((movie) => (
-                  <MovieCard
-                    key={movie.id}
-                    movie={movie}
-                    text={text}
-                    isDark={isDark}
-                    getGenreLabel={getGenreLabel}
-                    onSelect={setSelectedMovie}
-                    compact
-                  />
+                    {getGenreLabel(genre)}
+                  </span>
                 ))}
               </div>
-            </div>
-          </section>
-        )}
 
-        {activePage === "movies" && (
-          <section className="max-w-7xl mx-auto px-5 pt-28 pb-14">
-            <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+              {/* SUMMARY */}
+              <p
+                className={`
+        mb-8
+        max-w-2xl
+        text-base
+        leading-relaxed
+        md:text-xl
+        ${isDark ? "text-gray-200" : "text-slate-700"}
+      `}
+              >
+                {text.summaries[featuredMovie.name]}
+              </p>
+
+              {/* BUTTONS */}
+              <div className="flex flex-wrap gap-4">
+                <button
+                  type="button"
+                  onClick={() => setSelectedMovie(featuredMovie)}
+                  className="
+          rounded-full
+          bg-gradient-to-r
+          from-red-500
+          via-orange-500
+          to-yellow-400
+          px-8
+          py-4
+          text-sm
+          font-extrabold
+          text-white
+          shadow-2xl
+          shadow-red-500/30
+          transition-transform transition-opacity
+          duration-300
+          hover:scale-110
+          hover:shadow-red-500/50
+        "
+                >
+                  {text.watchTrailer}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleNavigate("movies")}
+                  className={`
+          rounded-full
+          border
+          px-8
+          py-4
+          text-sm
+          font-bold
+          backdrop-blur-xl
+          transition-transform transition-opacity
+          duration-300
+          hover:scale-105
+          ${
+            isDark
+              ? "border-white/20 bg-white/10 text-white hover:bg-white/20"
+              : "border-slate-300 bg-white/70 text-slate-900 hover:bg-white"
+          }
+        `}
+                >
+                  {text.openMovies}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="py-14 text-center">
+            <h2 className="mb-4 bg-gradient-to-r from-red-500 via-yellow-400 to-orange-500 bg-clip-text text-4xl font-extrabold text-transparent md:text-6xl">
+              MovieVerse
+            </h2>
+
+            <p
+              className={`mx-auto max-w-3xl text-lg leading-relaxed md:text-xl ${mutedText}`}
+            >
+              {text.heroDescription}
+            </p>
+          </div>
+
+          <div className="mb-12 grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
+            <InfoCard
+              value="15+"
+              label={text.totalMovies}
+              color="text-yellow-400"
+              className={cardClass}
+            />
+            <InfoCard
+              value="HD"
+              label={text.officialTrailer}
+              color="text-red-400"
+              className={cardClass}
+            />
+            <InfoCard
+              value={text.freeShort}
+              label={text.freeAccess}
+              color="text-green-400"
+              className={cardClass}
+            />
+          </div>
+
+          <div>
+            <div className="mb-7 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
               <div>
                 <p
                   className={`mb-2 text-sm font-bold uppercase tracking-[0.25em] ${isDark ? "text-red-300" : "text-red-500"}`}
                 >
                   {text.explore}
                 </p>
-                <h1 className="text-4xl font-extrabold md:text-6xl">
+                <h2 className="text-3xl font-extrabold md:text-4xl">
                   {text.popularThisWeek}
-                </h1>
+                </h2>
               </div>
-
-              <p className={`text-sm font-semibold ${subtleText}`}>
-                {filteredMovies.length} {text.movieFound}
+              <p className={`max-w-xl text-sm leading-relaxed ${subtleText}`}>
+                {text.trendingSubtitle}
               </p>
             </div>
 
-            <form
-              className={`mb-10 rounded-3xl border p-5 shadow-2xl backdrop-blur-xl ${cardClass}`}
-            >
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowSearchModal(true);
-                    if (searchCommitted) {
-                      setSearch("");
-                      setSearchCommitted(false);
-                    }
-                  }}
-                  className={`w-full rounded-2xl border p-4 text-left transition ${
-                    isDark
-                      ? "border-white/10 bg-black/25 text-gray-400"
-                      : "border-slate-200 bg-white text-slate-500"
-                  }`}
-                >
-                  {search || text.searchPlaceholder}
-                </button>
+            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+              {trendingMovies.map((movie) => (
+                <MovieCard
+                  key={movie.id}
+                  movie={movie}
+                  text={text}
+                  isDark={isDark}
+                  getGenreLabel={getGenreLabel}
+                  onSelect={setSelectedMovie}
+                  compact
+                />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
-                {search && (
-                  <button
-                    type="button"
-                    onClick={() => setSearch("")}
-                    className={`absolute right-4 top-1/2 -translate-y-1/2 text-lg font-bold transition ${
-                      isDark
-                        ? "text-gray-400 hover:text-white"
-                        : "text-slate-400 hover:text-slate-950"
-                    }`}
-                  >
-                    ✕
-                  </button>
-                )}
-              </div>
-
-              <fieldset className="mt-5">
-                <legend className={`mb-3 text-sm font-bold ${subtleText}`}>
-                  {text.genreFilter}
-                </legend>
-                <div className="flex flex-wrap gap-3">
-                  {genres.map((genre) => (
-                    <label
-                      key={genre}
-                      className={`cursor-pointer rounded-full border px-5 py-2 text-sm font-bold transition ${
-                        activeGenre === genre
-                          ? "border-red-400 bg-red-500 text-white shadow-lg shadow-red-500/25"
-                          : isDark
-                            ? "border-white/10 bg-white/10 text-gray-300 hover:border-yellow-400/60 hover:text-yellow-200"
-                            : "border-slate-200 bg-white text-slate-700 hover:border-red-300 hover:text-red-500"
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="genre"
-                        value={genre}
-                        checked={activeGenre === genre}
-                        onChange={() => setActiveGenre(genre)}
-                        className="sr-only"
-                      />
-                      {genre === "All" ? text.genreAll : getGenreLabel(genre)}
-                    </label>
-                  ))}
-                </div>
-              </fieldset>
-            </form>
-
-            {filteredMovies.length === 0 ? (
-              <div className="py-20 text-center">
-                <h2 className="mb-4 text-4xl font-bold text-red-400">
-                  {text.notFound}
-                </h2>
-                <p className={subtleText}>{text.notFoundHelp}</p>
-              </div>
-            ) : (
-              <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-                {filteredMovies.map((movie) => (
-                  <MovieCard
-                    key={movie.id}
-                    movie={movie}
-                    text={text}
-                    isDark={isDark}
-                    getGenreLabel={getGenreLabel}
-                    onSelect={setSelectedMovie}
-                  />
-                ))}
-              </div>
-            )}
-          </section>
-        )}
-
-        {activePage === "api" && (
-          <section className="max-w-7xl mx-auto px-5 pt-28 pb-14">
-            <div className="mb-8">
+      {activePage === "movies" && (
+        <section className="max-w-7xl mx-auto px-5 pt-28 pb-14">
+          <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div>
               <p
                 className={`mb-2 text-sm font-bold uppercase tracking-[0.25em] ${isDark ? "text-red-300" : "text-red-500"}`}
               >
-                {text.apiEyebrow}
+                {text.explore}
               </p>
-              <h1 className="mb-4 text-4xl font-extrabold md:text-6xl">
-                {text.apiTitle}
+              <h1 className="text-4xl font-extrabold md:text-6xl">
+                {text.popularThisWeek}
               </h1>
-              <p className={`max-w-3xl text-lg leading-relaxed ${mutedText}`}>
-                {text.apiDescription}
-              </p>
             </div>
 
-            <div
-              className={`mb-8 rounded-3xl border p-6 shadow-2xl backdrop-blur-xl ${cardClass}`}
-            >
-              <p
-                className={`text-sm font-bold uppercase tracking-[0.2em] ${subtleText}`}
-              >
-                {text.apiSource}
-              </p>
-              <p className="mt-2 font-mono text-sm">
-                https://api.tvmaze.com/shows?page=1
-              </p>
-            </div>
-
-            {apiLoading ? (
-              <div className="grid gap-6 md:grid-cols-2">
-                {Array.from({ length: 10 }).map((_, index) => (
-                  <div
-                    key={index}
-                    className={`rounded-3xl border p-6 shadow-xl ${cardClass}`}
-                  >
-                    <div
-                      className={`mb-4 h-5 w-24 animate-pulse rounded-full ${isDark ? "bg-white/10" : "bg-slate-200"}`}
-                    ></div>
-                    <div
-                      className={`mb-3 h-6 animate-pulse rounded-full ${isDark ? "bg-white/10" : "bg-slate-200"}`}
-                    ></div>
-                    <div
-                      className={`h-4 w-4/5 animate-pulse rounded-full ${isDark ? "bg-white/10" : "bg-slate-200"}`}
-                    ></div>
-                  </div>
-                ))}
-                <p
-                  className={`md:col-span-2 text-center font-semibold ${subtleText}`}
-                >
-                  {text.apiLoading}
-                </p>
-              </div>
-            ) : (
-              <>
-                {apiError && (
-                  <div className="mb-6 rounded-2xl border border-yellow-400/30 bg-yellow-400/10 p-4 text-sm font-semibold text-yellow-500">
-                    {text.apiError}
-                  </div>
-                )}
-
-                <div className="grid gap-6 md:grid-cols-2">
-                  {apiItems.map((show) => (
-                    <article
-                      key={show.id}
-                      className={`rounded-3xl border p-6 shadow-xl transition hover:-translate-y-1 hover:shadow-red-500/20 ${cardClass}`}
-                    >
-                      <div className="mb-4 flex flex-wrap items-center gap-2">
-                        <span className="inline-flex rounded-full bg-red-500 px-3 py-1 text-xs font-bold text-white">
-                          TVMaze #{show.id}
-                        </span>
-                        <span className="inline-flex rounded-full bg-yellow-400 px-3 py-1 text-xs font-bold text-black">
-                          {show.rating?.average
-                            ? `${text.rating} ${show.rating.average}`
-                            : text.apiNoRating}
-                        </span>
-                      </div>
-
-                      <h2 className="mb-3 text-xl font-extrabold">
-                        {show.name}
-                      </h2>
-
-                      <div className={`mb-4 grid gap-2 text-sm ${mutedText}`}>
-                        <p>
-                          <span className="font-bold">{text.apiLanguage}:</span>{" "}
-                          {show.language || "-"}
-                        </p>
-                        <p>
-                          <span className="font-bold">
-                            {text.apiPremiered}:
-                          </span>{" "}
-                          {show.premiered || "-"}
-                        </p>
-                        <p>
-                          <span className="font-bold">{text.apiGenres}:</span>{" "}
-                          {show.genres?.length ? show.genres.join(", ") : "-"}
-                        </p>
-                      </div>
-
-                      <p
-                        className={`line-clamp-3 leading-relaxed ${mutedText}`}
-                      >
-                        {stripHtml(show.summary)}
-                      </p>
-                    </article>
-                  ))}
-                </div>
-              </>
-            )}
-          </section>
-        )}
-
-        <footer
-          className={`mt-16 border-t ${isDark ? "border-white/10" : "border-slate-200"}`}
-        >
-          <div className="max-w-7xl mx-auto px-5 py-10 text-center">
-            <h2 className="mb-3 bg-gradient-to-r from-red-500 to-yellow-400 bg-clip-text text-3xl font-bold text-transparent">
-              MovieVerse
-            </h2>
-
-            <p className={`mb-4 ${mutedText}`}>{text.footerTech}</p>
-
-            <p className={`text-sm ${subtleText}`}>{text.footerRights}</p>
+            <p className={`text-sm font-semibold ${subtleText}`}>
+              {filteredMovies.length} {text.movieFound}
+            </p>
           </div>
-        </footer>
-      </main>
 
-      {/* --- MODAL AREA (DI LUAR MAIN) --- */}
+          <form
+            className={`mb-10 rounded-3xl border p-5 shadow-2xl backdrop-blur-xl ${cardClass}`}
+          >
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowSearchModal(true);
+
+                  if (searchCommitted) {
+                    setSearch(""); // clear input lama
+                    setSearchCommitted(false);
+                  }
+                }}
+                className={`w-full rounded-2xl border p-4 text-left transition ${
+                  isDark
+                    ? "border-white/10 bg-black/25 text-gray-400"
+                    : "border-slate-200 bg-white text-slate-500"
+                }`}
+              >
+                {search || text.searchPlaceholder}
+              </button>
+
+              {search && (
+                <button
+                  type="button"
+                  onClick={() => setSearch("")}
+                  className={`absolute right-4 top-1/2 -translate-y-1/2 text-lg font-bold transition ${
+                    isDark
+                      ? "text-gray-400 hover:text-white"
+                      : "text-slate-400 hover:text-slate-950"
+                  }`}
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+
+            <fieldset className="mt-5">
+              <legend className={`mb-3 text-sm font-bold ${subtleText}`}>
+                {text.genreFilter}
+              </legend>
+              <div className="flex flex-wrap gap-3">
+                {genres.map((genre) => (
+                  <label
+                    key={genre}
+                    className={`cursor-pointer rounded-full border px-5 py-2 text-sm font-bold transition ${
+                      activeGenre === genre
+                        ? "border-red-400 bg-red-500 text-white shadow-lg shadow-red-500/25"
+                        : isDark
+                          ? "border-white/10 bg-white/10 text-gray-300 hover:border-yellow-400/60 hover:text-yellow-200"
+                          : "border-slate-200 bg-white text-slate-700 hover:border-red-300 hover:text-red-500"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="genre"
+                      value={genre}
+                      checked={activeGenre === genre}
+                      onChange={() => setActiveGenre(genre)}
+                      className="sr-only"
+                    />
+                    {genre === "All" ? text.genreAll : getGenreLabel(genre)}
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+          </form>
+
+          {filteredMovies.length === 0 ? (
+            <div className="py-20 text-center">
+              <h2 className="mb-4 text-4xl font-bold text-red-400">
+                {text.notFound}
+              </h2>
+              <p className={subtleText}>{text.notFoundHelp}</p>
+            </div>
+          ) : (
+            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+              {filteredMovies.map((movie) => (
+                <MovieCard
+                  key={movie.id}
+                  movie={movie}
+                  text={text}
+                  isDark={isDark}
+                  getGenreLabel={getGenreLabel}
+                  onSelect={setSelectedMovie}
+                />
+              ))}
+            </div>
+          )}
+        </section>
+      )}
+
+      {activePage === "api" && (
+        <section className="max-w-7xl mx-auto px-5 pt-28 pb-14">
+          <div className="mb-8">
+            <p
+              className={`mb-2 text-sm font-bold uppercase tracking-[0.25em] ${isDark ? "text-red-300" : "text-red-500"}`}
+            >
+              {text.apiEyebrow}
+            </p>
+            <h1 className="mb-4 text-4xl font-extrabold md:text-6xl">
+              {text.apiTitle}
+            </h1>
+            <p className={`max-w-3xl text-lg leading-relaxed ${mutedText}`}>
+              {text.apiDescription}
+            </p>
+          </div>
+
+          <div
+            className={`mb-8 rounded-3xl border p-6 shadow-2xl backdrop-blur-xl ${cardClass}`}
+          >
+            <p
+              className={`text-sm font-bold uppercase tracking-[0.2em] ${subtleText}`}
+            >
+              {text.apiSource}
+            </p>
+            <p className="mt-2 font-mono text-sm">
+              https://api.tvmaze.com/shows?page=1
+            </p>
+          </div>
+
+          {apiLoading ? (
+            <div className="grid gap-6 md:grid-cols-2">
+              {Array.from({ length: 10 }).map((_, index) => (
+                <div
+                  key={index}
+                  className={`rounded-3xl border p-6 shadow-xl ${cardClass}`}
+                >
+                  <div
+                    className={`mb-4 h-5 w-24 animate-pulse rounded-full ${isDark ? "bg-white/10" : "bg-slate-200"}`}
+                  ></div>
+                  <div
+                    className={`mb-3 h-6 animate-pulse rounded-full ${isDark ? "bg-white/10" : "bg-slate-200"}`}
+                  ></div>
+                  <div
+                    className={`h-4 w-4/5 animate-pulse rounded-full ${isDark ? "bg-white/10" : "bg-slate-200"}`}
+                  ></div>
+                </div>
+              ))}
+              <p
+                className={`md:col-span-2 text-center font-semibold ${subtleText}`}
+              >
+                {text.apiLoading}
+              </p>
+            </div>
+          ) : (
+            <>
+              {apiError && (
+                <div className="mb-6 rounded-2xl border border-yellow-400/30 bg-yellow-400/10 p-4 text-sm font-semibold text-yellow-500">
+                  {text.apiError}
+                </div>
+              )}
+
+              <div className="grid gap-6 md:grid-cols-2">
+                {apiItems.map((show) => (
+                  <article
+                    key={show.id}
+                    className={`rounded-3xl border p-6 shadow-xl transition hover:-translate-y-1 hover:shadow-red-500/20 ${cardClass}`}
+                  >
+                    <div className="mb-4 flex flex-wrap items-center gap-2">
+                      <span className="inline-flex rounded-full bg-red-500 px-3 py-1 text-xs font-bold text-white">
+                        TVMaze #{show.id}
+                      </span>
+                      <span className="inline-flex rounded-full bg-yellow-400 px-3 py-1 text-xs font-bold text-black">
+                        {show.rating?.average
+                          ? `${text.rating} ${show.rating.average}`
+                          : text.apiNoRating}
+                      </span>
+                    </div>
+
+                    <h2 className="mb-3 text-xl font-extrabold">{show.name}</h2>
+
+                    <div className={`mb-4 grid gap-2 text-sm ${mutedText}`}>
+                      <p>
+                        <span className="font-bold">{text.apiLanguage}:</span>{" "}
+                        {show.language || "-"}
+                      </p>
+                      <p>
+                        <span className="font-bold">{text.apiPremiered}:</span>{" "}
+                        {show.premiered || "-"}
+                      </p>
+                      <p>
+                        <span className="font-bold">{text.apiGenres}:</span>{" "}
+                        {show.genres?.length ? show.genres.join(", ") : "-"}
+                      </p>
+                    </div>
+
+                    <p className={`line-clamp-3 leading-relaxed ${mutedText}`}>
+                      {stripHtml(show.summary)}
+                    </p>
+                  </article>
+                ))}
+              </div>
+            </>
+          )}
+        </section>
+      )}
 
       {selectedMovie && (
         <MovieModal
@@ -1351,7 +1316,21 @@ function Home({ theme, language, activePage, onNavigate }) {
           </div>
         </div>
       )}
-    </>
+
+      <footer
+        className={`mt-16 border-t ${isDark ? "border-white/10" : "border-slate-200"}`}
+      >
+        <div className="max-w-7xl mx-auto px-5 py-10 text-center">
+          <h2 className="mb-3 bg-gradient-to-r from-red-500 to-yellow-400 bg-clip-text text-3xl font-bold text-transparent">
+            MovieVerse
+          </h2>
+
+          <p className={`mb-4 ${mutedText}`}>{text.footerTech}</p>
+
+          <p className={`text-sm ${subtleText}`}>{text.footerRights}</p>
+        </div>
+      </footer>
+    </main>
   );
 }
 
@@ -1437,57 +1416,50 @@ function MovieCard({
 }
 
 function MovieModal({ movie, text, isDark, getGenreLabel, onClose }) {
-  useEffect(() => {
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = "unset";
-    };
-  }, []);
-
   return (
     <div
       onClick={onClose}
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 px-4 py-6 backdrop-blur-md"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-md"
     >
       <article
-        onClick={(e) => e.stopPropagation()}
-        className={`
-          relative flex w-[95vw] max-w-5xl h-[85vh] flex-col
-          overflow-hidden rounded-3xl border shadow-2xl
-          ${isDark ? "border-white/10 bg-gray-900" : "border-slate-200 bg-white"}
-        `}
+        onClick={(event) => event.stopPropagation()}
+        className={`relative w-full max-w-5xl max-h-[95vh] flex flex-col overflow-hidden rounded-3xl border shadow-2xl ${
+          isDark
+            ? "border-white/10 bg-gray-900"
+            : "border-slate-200 bg-white text-slate-950"
+        }`}
       >
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-4 top-4 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-red-500 text-lg font-bold text-white shadow-lg transition hover:scale-110 hover:bg-red-600"
+          className="absolute right-4 top-4 z-20 h-11 w-11 rounded-full bg-red-500 font-bold text-white shadow-lg transition hover:bg-red-600"
         >
-          ✕
+          X
         </button>
 
-        <div className="relative w-full shrink-0">
+        <div className="relative w-full">
           <img
             src={movie.image.original}
             alt={movie.name}
-            className="h-[30vh] w-full object-cover md:h-[40vh]"
+            className="max-h-[70vh] w-full object-cover md:max-h-[80vh]"
           />
 
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent"></div>
 
-          <div className="absolute bottom-4 left-6 right-6 text-white md:bottom-6">
-            <h2 className="mb-2 text-3xl font-extrabold drop-shadow-lg md:mb-4 md:text-5xl">
+          <div className="absolute bottom-6 left-6 right-6 text-white">
+            <h2 className="mb-4 text-3xl font-extrabold md:text-5xl">
               {movie.name}
             </h2>
 
-            <div className="flex flex-wrap gap-2 md:gap-3">
-              <span className="rounded-full bg-yellow-500 px-3 py-1 text-xs font-bold text-black shadow-md md:text-sm">
+            <div className="flex flex-wrap gap-3">
+              <span className="rounded-full bg-yellow-500 px-4 py-1 font-bold text-black">
                 {text.rating} {movie.rating.average}
               </span>
 
               {movie.genres.map((genre) => (
                 <span
                   key={genre}
-                  className="rounded-full bg-red-500/80 px-3 py-1 text-xs font-semibold shadow-md backdrop-blur-md md:text-sm"
+                  className="rounded-full bg-red-500/80 px-4 py-1 text-sm"
                 >
                   {getGenreLabel(genre)}
                 </span>
@@ -1496,32 +1468,20 @@ function MovieModal({ movie, text, isDark, getGenreLabel, onClose }) {
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6 scrollbar-hide md:p-10">
-          <h3
-            className={`mb-3 text-xl font-bold md:text-2xl ${
-              isDark ? "text-white" : "text-slate-900"
-            }`}
-          >
-            {text.movieSummary}
-          </h3>
+        <div className="flex-1 overflow-y-auto p-6 md:p-10">
+          <h3 className="mb-5 text-2xl font-bold">{text.movieSummary}</h3>
+
           <p
-            className={`mb-10 text-base leading-relaxed md:text-lg ${
-              isDark ? "text-gray-300" : "text-slate-600"
-            }`}
+            className={`mb-10 leading-relaxed ${isDark ? "text-gray-300" : "text-slate-600"}`}
           >
             {text.summaries[movie.name]}
           </p>
 
-          <h3
-            className={`mb-4 text-xl font-bold md:text-2xl ${
-              isDark ? "text-white" : "text-slate-900"
-            }`}
-          >
-            {text.officialTrailer}
-          </h3>
-          <div className="overflow-hidden rounded-2xl border border-white/10 shadow-2xl">
+          <h3 className="mb-5 text-2xl font-bold">{text.officialTrailer}</h3>
+
+          <div className="overflow-hidden rounded-3xl border border-white/10 shadow-2xl">
             <iframe
-              className="h-[250px] w-full sm:h-[350px] md:h-[500px]"
+              className="h-[220px] w-full sm:h-[320px] md:h-[450px] lg:h-[550px]"
               src={trailers[movie.name]}
               title={`${movie.name} Trailer`}
               allowFullScreen

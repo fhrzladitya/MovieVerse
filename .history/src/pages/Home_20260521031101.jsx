@@ -471,26 +471,11 @@ function Home({ theme, language, activePage, onNavigate }) {
   const [scrollY, setScrollY] = useState(0);
   const [pageTransition, setPageTransition] = useState(false);
 
-  // STATE BARU UNTUK ANIMASI SPLASH REFRESH
-  const [isRefreshing, setIsRefreshing] = useState(true);
-
-  // EFEK SAAT PERTAMA KALI COMPONENT DI-MOUNT (FRESH LOAD/REFRESH)
-  useEffect(() => {
-    // 1. Paksa scroll ke atas banget setiap kali di refresh
-    window.scrollTo(0, 0);
-
-    // 2. Set timer untuk animasi loading (1.2 detik)
-    const timer = setTimeout(() => {
-      setIsRefreshing(false);
-    }, 1200);
-
-    return () => clearTimeout(timer);
-  }, []);
-
   useEffect(() => {
     if (activePage !== "api" || apiFetched) return;
 
     let isMounted = true;
+
     setApiLoading(true);
 
     const minimumLoadingTime = new Promise((resolve) =>
@@ -503,16 +488,19 @@ function Home({ theme, language, activePage, onNavigate }) {
     ])
       .then(([response]) => {
         if (!isMounted) return;
+
         setApiItems(response.data.slice(0, 10));
         setApiError(false);
       })
       .catch(() => {
         if (!isMounted) return;
+
         setApiItems(fallbackShows);
         setApiError(true);
       })
       .finally(() => {
         if (!isMounted) return;
+
         setApiLoading(false);
         setApiFetched(true);
       });
@@ -564,6 +552,7 @@ function Home({ theme, language, activePage, onNavigate }) {
 
     setTimeout(() => {
       onNavigate(page);
+
       window.scrollTo({
         top: 0,
         behavior: "smooth",
@@ -579,7 +568,9 @@ function Home({ theme, language, activePage, onNavigate }) {
     const handleScroll = () => {
       setScrollY(window.scrollY);
     };
+
     window.addEventListener("scroll", handleScroll);
+
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -635,34 +626,12 @@ function Home({ theme, language, activePage, onNavigate }) {
 
   return (
     <>
-      {/* SPLASH SCREEN LOADING (Jalan setiap kali app di-refresh) */}
-      {isRefreshing && (
-        <div
-          className={`fixed inset-0 z-[200] flex flex-col items-center justify-center transition-opacity duration-300 ${
-            isDark ? "bg-[#050505]" : "bg-[#f3f4f6]"
-          }`}
-        >
-          <div className="animate-pulse flex flex-col items-center">
-            <h1 className="text-4xl md:text-6xl font-extrabold bg-gradient-to-r from-red-500 via-orange-400 to-yellow-300 bg-clip-text text-transparent">
-              MovieVerse
-            </h1>
-            <p
-              className={`mt-4 text-sm font-bold tracking-widest ${
-                isDark ? "text-gray-400" : "text-slate-500"
-              }`}
-            >
-              LOADING...
-            </p>
-          </div>
-        </div>
-      )}
-
       <main
         className={`
           min-h-screen overflow-hidden
           transition-transform transition-opacity duration-500 ease-[cubic-bezier(.22,1,.36,1)]
           ${
-            pageTransition || isRefreshing
+            pageTransition
               ? "opacity-0 translate-y-4 scale-[0.985]"
               : "opacity-100 translate-y-0 scale-100"
           }
@@ -969,6 +938,7 @@ function Home({ theme, language, activePage, onNavigate }) {
                   type="button"
                   onClick={() => {
                     setShowSearchModal(true);
+
                     if (searchCommitted) {
                       setSearch("");
                       setSearchCommitted(false);
@@ -1497,11 +1467,7 @@ function MovieModal({ movie, text, isDark, getGenreLabel, onClose }) {
         </div>
 
         <div className="flex-1 overflow-y-auto p-6 scrollbar-hide md:p-10">
-          <h3
-            className={`mb-3 text-xl font-bold md:text-2xl ${
-              isDark ? "text-white" : "text-slate-900"
-            }`}
-          >
+          <h3 className="mb-3 text-xl font-bold md:text-2xl">
             {text.movieSummary}
           </h3>
           <p
@@ -1512,11 +1478,7 @@ function MovieModal({ movie, text, isDark, getGenreLabel, onClose }) {
             {text.summaries[movie.name]}
           </p>
 
-          <h3
-            className={`mb-4 text-xl font-bold md:text-2xl ${
-              isDark ? "text-white" : "text-slate-900"
-            }`}
-          >
+          <h3 className="mb-4 text-xl font-bold md:text-2xl">
             {text.officialTrailer}
           </h3>
           <div className="overflow-hidden rounded-2xl border border-white/10 shadow-2xl">
