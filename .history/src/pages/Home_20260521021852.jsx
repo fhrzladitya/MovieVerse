@@ -646,7 +646,7 @@ function Home({ theme, language, activePage, onNavigate }) {
     transition-transform transition-opacity duration-500 ease-[cubic-bezier(.22,1,.36,1)] duration-500 ease-[cubic-bezier(.22,1,.36,1)]
     ${
       pageTransition
-        ? "opacity-0 translate-y-4 scale-[0.985]"
+        ? "opacity-0 translate-y-10 scale-[0.98]"
         : "opacity-100 translate-y-0 scale-100"
     }
     ${pageBackground}

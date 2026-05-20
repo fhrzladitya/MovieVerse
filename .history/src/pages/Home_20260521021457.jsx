@@ -641,16 +641,7 @@ function Home({ theme, language, activePage, onNavigate }) {
 
   return (
     <main
-      className={`
-    min-h-screen overflow-hidden
-    transition-transform transition-opacity duration-500 ease-[cubic-bezier(.22,1,.36,1)] duration-500 ease-[cubic-bezier(.22,1,.36,1)]
-    ${
-      pageTransition
-        ? "opacity-0 translate-y-4 scale-[0.985]"
-        : "opacity-100 translate-y-0 scale-100"
-    }
-    ${pageBackground}
-  `}
+      className={`min-h-screen overflow-hidden transition-colors duration-500 ${pageBackground}`}
     >
       <div className="fixed inset-0 overflow-hidden -z-10">
         <div className="absolute top-0 left-0 w-[360px] h-[360px] bg-red-500/20 blur-3xl rounded-full"></div>
@@ -668,7 +659,7 @@ function Home({ theme, language, activePage, onNavigate }) {
     rounded-b-[2.5rem]
     border
     shadow-2xl
-    transition-transform transition-opacity
+    transition-all
     duration-500
     ${isDark ? "border-white/10 bg-black" : "border-slate-200 bg-white"}
   `}
@@ -826,7 +817,7 @@ function Home({ theme, language, activePage, onNavigate }) {
           text-white
           shadow-2xl
           shadow-red-500/30
-          transition-transform transition-opacity
+          transition-all
           duration-300
           hover:scale-110
           hover:shadow-red-500/50
@@ -846,7 +837,7 @@ function Home({ theme, language, activePage, onNavigate }) {
           text-sm
           font-bold
           backdrop-blur-xl
-          transition-transform transition-opacity
+          transition-all
           duration-300
           hover:scale-105
           ${
@@ -1168,7 +1159,7 @@ function Home({ theme, language, activePage, onNavigate }) {
         >
           <div
             onClick={(event) => event.stopPropagation()}
-            className={`mt-28 w-[92%] max-w-2xl rounded-3xl border p-6 shadow-2xl backdrop-blur-2xl transition-transform transition-opacity ${
+            className={`mt-28 w-[92%] max-w-2xl rounded-3xl border p-6 shadow-2xl backdrop-blur-2xl transition-all ${
               isDark
                 ? "border-white/10 bg-gray-900/80"
                 : "border-white/40 bg-white/70"

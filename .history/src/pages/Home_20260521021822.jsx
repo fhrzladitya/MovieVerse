@@ -643,10 +643,10 @@ function Home({ theme, language, activePage, onNavigate }) {
     <main
       className={`
     min-h-screen overflow-hidden
-    transition-transform transition-opacity duration-500 ease-[cubic-bezier(.22,1,.36,1)] duration-500 ease-[cubic-bezier(.22,1,.36,1)]
+    transition-transform transition-opacity duration-500 ease-[cubic-bezier(.22,1,.36,1)]
     ${
       pageTransition
-        ? "opacity-0 translate-y-4 scale-[0.985]"
+        ? "opacity-0 translate-y-10 scale-[0.98]"
         : "opacity-100 translate-y-0 scale-100"
     }
     ${pageBackground}
@@ -1168,7 +1168,7 @@ function Home({ theme, language, activePage, onNavigate }) {
         >
           <div
             onClick={(event) => event.stopPropagation()}
-            className={`mt-28 w-[92%] max-w-2xl rounded-3xl border p-6 shadow-2xl backdrop-blur-2xl transition-transform transition-opacity ${
+            className={`mt-28 w-[92%] max-w-2xl rounded-3xl border p-6 shadow-2xl backdrop-blur-2xl transition-all ${
               isDark
                 ? "border-white/10 bg-gray-900/80"
                 : "border-white/40 bg-white/70"
