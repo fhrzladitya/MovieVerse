@@ -440,8 +440,6 @@ function Home({ theme, language, activePage, onNavigate }) {
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchClose, setClosingSearch] = useState(false)
   const [showSearchModal, setShowSearchModal] = useState(false)
-  const [searchCommitted, setSearchCommitted] = useState(false)
-  const [lastSearch, setLastSearch] = useState("")
   const [recentSearches, setRecentSearches] = useState([])
 
 useEffect(() => {
@@ -496,28 +494,23 @@ const handleSearchChange = (value) => {
   setSearch(value)
 }
 
-const commitSearch = (value) => {
-  const cleaned = value.trim()
-  if (!cleaned) return
+const commitSearch = (keyword) => {
+  const trimmed = keyword.trim()
+  if (!trimmed) return
 
-  setLastSearch(cleaned)
-  setSearchCommitted(true)
-  setSearch(cleaned)
-
-  setRecentSearches(prev => {
+  setRecentSearches((prev) => {
     const updated = [
-      cleaned,
-      ...prev.filter(i => i.toLowerCase() !== cleaned.toLowerCase())
+      trimmed,
+      ...prev.filter(
+        (item) => item.toLowerCase() !== trimmed.toLowerCase()
+      ),
     ]
+
     return updated.slice(0, 5)
   })
 }
 
-const exitSearchMode = () => {
-  setShowSearchModal(false)
-  setSearchCommitted(false)
-  setSearch("")
-}
+
 
   const genres = useMemo(
     () => ["All", ...new Set(movieData.flatMap((movie) => movie.genres))],
@@ -691,14 +684,7 @@ const closeSearchModal = () => {
             <div className="relative">
               <button
                 type="button"
-                onClick={() => {
-                  setShowSearchModal(true)
-
-                  if (searchCommitted) {
-                    setSearch("")        // clear input lama
-                    setSearchCommitted(false)
-                  }
-                }}
+                onClick={() => setShowSearchModal(true)}
                 className={`w-full rounded-2xl border p-4 text-left transition ${
                   isDark
                     ? "border-white/10 bg-black/25 text-gray-400"

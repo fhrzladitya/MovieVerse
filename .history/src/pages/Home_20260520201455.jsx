@@ -440,8 +440,6 @@ function Home({ theme, language, activePage, onNavigate }) {
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchClose, setClosingSearch] = useState(false)
   const [showSearchModal, setShowSearchModal] = useState(false)
-  const [searchCommitted, setSearchCommitted] = useState(false)
-  const [lastSearch, setLastSearch] = useState("")
   const [recentSearches, setRecentSearches] = useState([])
 
 useEffect(() => {
@@ -494,29 +492,17 @@ useEffect(() => {
 
 const handleSearchChange = (value) => {
   setSearch(value)
-}
 
-const commitSearch = (value) => {
-  const cleaned = value.trim()
-  if (!cleaned) return
+  if (!value.trim()) return
 
-  setLastSearch(cleaned)
-  setSearchCommitted(true)
-  setSearch(cleaned)
-
-  setRecentSearches(prev => {
+  setRecentSearches((prev) => {
     const updated = [
-      cleaned,
-      ...prev.filter(i => i.toLowerCase() !== cleaned.toLowerCase())
+      value,
+      ...prev.filter((item) => item.toLowerCase() !== value.toLowerCase()),
     ]
+
     return updated.slice(0, 5)
   })
-}
-
-const exitSearchMode = () => {
-  setShowSearchModal(false)
-  setSearchCommitted(false)
-  setSearch("")
 }
 
   const genres = useMemo(
@@ -534,13 +520,12 @@ const closeSearchModal = () => {
   setClosingSearch(true)
 
   setTimeout(() => {
-    setShowSearchModal(false)
+    closeSearchModal()
     setClosingSearch(false)
   }, 200)
 }
 
   const filteredMovies = movieData.filter((movie) => {
-    
     const matchesSearch = movie.name.toLowerCase().includes(search.toLowerCase())
     const matchesGenre = activeGenre === "All" || movie.genres.includes(activeGenre)
     const matchesRating = !onlyHighRated || movie.rating.average >= 8.7
@@ -548,10 +533,6 @@ const closeSearchModal = () => {
     return matchesSearch && matchesGenre && matchesRating
   })
 
-  const searchResults = movieData.filter((movie) =>
-    movie.name.toLowerCase().includes(search.toLowerCase())
-  )
-  
   const pageBackground = isDark
     ? "bg-gradient-to-br from-black via-gray-950 to-black text-white"
     : "bg-gradient-to-br from-slate-100 via-white to-orange-50 text-slate-950"
@@ -691,14 +672,7 @@ const closeSearchModal = () => {
             <div className="relative">
               <button
                 type="button"
-                onClick={() => {
-                  setShowSearchModal(true)
-
-                  if (searchCommitted) {
-                    setSearch("")        // clear input lama
-                    setSearchCommitted(false)
-                  }
-                }}
+                onClick={() => setShowSearchModal(true)}
                 className={`w-full rounded-2xl border p-4 text-left transition ${
                   isDark
                     ? "border-white/10 bg-black/25 text-gray-400"
@@ -856,50 +830,54 @@ const closeSearchModal = () => {
         />
       )}
 
-{showSearchModal && (
-  <div
-    onClick={closeSearchModal}
-    className={`fixed inset-0 z-50 flex items-start justify-center bg-black/50 px-4 pt-24 backdrop-blur-md ${
-      searchClose
-        ? "animate-[fadeOutDown_.2s_ease_forwards]"
-        : "animate-[fadeIn_.25s_ease]"
-    }`}
-  >
-    <div
-      onClick={(event) => event.stopPropagation()}
-      className={`mt-28 w-[92%] max-w-2xl rounded-3xl border p-6 shadow-2xl backdrop-blur-2xl transition-all ${
-        isDark
-          ? "border-white/10 bg-gray-900/80"
-          : "border-white/40 bg-white/70"
-      }`}
-    >
-      <div className="relative">
-        <input
-          autoFocus
-          type="text"
-          placeholder={text.searchPlaceholder}
-          value={search}
-          onChange={(event) =>
-            handleSearchChange(event.target.value)
-          }
-          onKeyDown={(event) => {
-            if (event.key === "Enter") {
-              commitSearch(search)
-              closeSearchModal()
-            }
-          }}
-          className={`w-full rounded-2xl border p-4 pr-12 outline-none focus:ring-2 focus:ring-red-500 ${
-            isDark
-              ? "border-white/10 bg-black/20 text-white placeholder:text-gray-400"
-              : "border-slate-200 bg-white text-slate-950 placeholder:text-slate-500"
-          }`}
-        />
+      {showSearchModal && (
+          <div
+            onClick={() => setShowSearchModal(false)}
+className={`fixed inset-0 z-50 flex items-start justify-center bg-black/50 px-4 pt-24 backdrop-blur-md ${
+
+    ? "animate-[fadeOut_.2s_ease_forwards]"
+    : "animate-[fadeIn_.25s_ease]"
+}`}
+          >
+            <div
+              onClick={(event) => event.stopPropagation()}
+              className={`mt-28 w-[92%] max-w-2xl rounded-3xl border p-6 shadow-2xl backdrop-blur-2xl transition-all ${
+                isDark
+                  ? "border-white/10 bg-gray-900/80"
+                  : "border-white/40 bg-white/70"
+              }`}
+            >
+              <div className="relative">
+                <input
+                  autoFocus
+                  type="text"
+                  placeholder={text.searchPlaceholder}
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (
+                      event.key === "Enter" &&
+                      search.trim() &&
+                      !recentSearches.includes(search)
+                    ) {
+                      setRecentSearches((prev) => [
+                        search,
+                        ...prev.slice(0, 4),
+                      ])
+                    }
+                  }}
+                  className={`w-full rounded-2xl border p-4 pr-12 outline-none focus:ring-2 focus:ring-red-500 ${
+                    isDark
+                      ? "border-white/10 bg-black/20 text-white placeholder:text-gray-400"
+                      : "border-slate-200 bg-white text-slate-950 placeholder:text-slate-500"
+                  }`}
+                />
 
         {search && (
           <button
             type="button"
             onClick={() => setSearch("")}
-            className={`absolute right-4 top-1/2 -translate-y-1/2 text-lg font-bold transition ${
+            className={`absolute right-4 top-1/2 -translate-y-1/2 text-lg font-bold ${
               isDark
                 ? "text-gray-400 hover:text-white"
                 : "text-slate-400 hover:text-black"
@@ -909,100 +887,14 @@ const closeSearchModal = () => {
           </button>
         )}
       </div>
-          
-      {search.trim() && (
-  <div className="mt-6">
-    <p
-      className={`mb-4 text-sm font-bold ${
-        isDark
-          ? "text-gray-300"
-          : "text-slate-600"
-      }`}
-    >
-      Search Results
-    </p>
-
-      {searchResults.length > 0 ? (
-        <div className="space-y-3">
-          {searchResults.slice(0, 5).map((movie) => (
-            <button
-              key={movie.id}
-              type="button"
-              onClick={() => {
-                setSelectedMovie(movie)
-                commitSearch(search)
-                closeSearchModal()
-              }}
-              className={`flex w-full items-center gap-4 rounded-2xl p-3 text-left transition hover:scale-[1.01] ${
-                isDark
-                  ? "bg-white/5 hover:bg-white/10"
-                  : "bg-slate-100 hover:bg-slate-200"
-              }`}
-            >
-              <img
-                src={movie.image.medium}
-                alt={movie.name}
-                className="h-16 w-12 rounded-lg object-cover"
-              />
-
-              <div className="flex-1 overflow-hidden">
-                <h3 className="truncate font-bold">
-                  {movie.name}
-                </h3>
-
-                <p
-                  className={`mt-1 text-sm ${
-                    isDark
-                      ? "text-gray-400"
-                      : "text-slate-500"
-                  }`}
-                >
-                  ⭐ {movie.rating.average} •{" "}
-                  {movie.genres.join(", ")}
-                </p>
-              </div>
-            </button>
-          ))}
-        </div>
-      ) : (
-        <div
-          className={`rounded-2xl p-4 text-sm ${
-            isDark
-              ? "bg-white/5 text-gray-400"
-              : "bg-slate-100 text-slate-500"
-          }`}
-        >
-          No movies found.
-        </div>
-      )}
-    </div>
-  )}
 
       {recentSearches.length > 0 && (
         <div className="mt-5">
-          <div className="mb-3 flex items-center justify-between">
-            <p
-              className={`text-sm font-bold ${
-                isDark
-                  ? "text-gray-300"
-                  : "text-slate-600"
-              }`}
-            >
-              Recent Searches
-            </p>
-
-            <button
-              type="button"
-              onClick={() => setRecentSearches([])}
-              className={`text-xs font-semibold transition ${
-                isDark
-                  ? "text-red-300 hover:text-red-200"
-                  : "text-red-500 hover:text-red-600"
-              }`}
-            >
-              Clear All
-            </button>
-          </div>
+          <p className={`mb-3 text-sm font-bold ${
+            isDark ? "text-gray-300" : "text-slate-600"
+          }`}>
+            Recent Searches
+          </p>
 
           <div className="flex flex-wrap gap-3">
             {recentSearches.map((item, index) => (
@@ -1010,7 +902,7 @@ const closeSearchModal = () => {
                 key={index}
                 type="button"
                 onClick={() => setSearch(item)}
-                className={`rounded-full px-4 py-2 text-sm transition hover:scale-105 ${
+                className={`rounded-full px-4 py-2 text-sm transition ${
                   isDark
                     ? "bg-white/10 text-white hover:bg-red-500"
                     : "bg-slate-200 text-slate-800 hover:bg-red-500 hover:text-white"

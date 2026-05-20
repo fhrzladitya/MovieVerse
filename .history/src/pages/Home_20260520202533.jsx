@@ -440,8 +440,6 @@ function Home({ theme, language, activePage, onNavigate }) {
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchClose, setClosingSearch] = useState(false)
   const [showSearchModal, setShowSearchModal] = useState(false)
-  const [searchCommitted, setSearchCommitted] = useState(false)
-  const [lastSearch, setLastSearch] = useState("")
   const [recentSearches, setRecentSearches] = useState([])
 
 useEffect(() => {
@@ -496,29 +494,6 @@ const handleSearchChange = (value) => {
   setSearch(value)
 }
 
-const commitSearch = (value) => {
-  const cleaned = value.trim()
-  if (!cleaned) return
-
-  setLastSearch(cleaned)
-  setSearchCommitted(true)
-  setSearch(cleaned)
-
-  setRecentSearches(prev => {
-    const updated = [
-      cleaned,
-      ...prev.filter(i => i.toLowerCase() !== cleaned.toLowerCase())
-    ]
-    return updated.slice(0, 5)
-  })
-}
-
-const exitSearchMode = () => {
-  setShowSearchModal(false)
-  setSearchCommitted(false)
-  setSearch("")
-}
-
   const genres = useMemo(
     () => ["All", ...new Set(movieData.flatMap((movie) => movie.genres))],
     []
@@ -548,9 +523,9 @@ const closeSearchModal = () => {
     return matchesSearch && matchesGenre && matchesRating
   })
 
-  const searchResults = movieData.filter((movie) =>
-    movie.name.toLowerCase().includes(search.toLowerCase())
-  )
+const searchResults = movieData.filter((movie) =>
+  movie.name.toLowerCase().includes(search.toLowerCase())
+)
   
   const pageBackground = isDark
     ? "bg-gradient-to-br from-black via-gray-950 to-black text-white"
@@ -691,14 +666,7 @@ const closeSearchModal = () => {
             <div className="relative">
               <button
                 type="button"
-                onClick={() => {
-                  setShowSearchModal(true)
-
-                  if (searchCommitted) {
-                    setSearch("")        // clear input lama
-                    setSearchCommitted(false)
-                  }
-                }}
+                onClick={() => setShowSearchModal(true)}
                 className={`w-full rounded-2xl border p-4 text-left transition ${
                   isDark
                     ? "border-white/10 bg-black/25 text-gray-400"
@@ -884,8 +852,22 @@ const closeSearchModal = () => {
           }
           onKeyDown={(event) => {
             if (event.key === "Enter") {
-              commitSearch(search)
-              closeSearchModal()
+              const trimmedSearch = search.trim()
+
+              if (!trimmedSearch) return
+
+              setRecentSearches((prev) => {
+                const updated = [
+                  trimmedSearch,
+                  ...prev.filter(
+                    (item) =>
+                      item.toLowerCase() !==
+                      trimmedSearch.toLowerCase()
+                  ),
+                ]
+
+                return updated.slice(0, 5)
+              })
             }
           }}
           className={`w-full rounded-2xl border p-4 pr-12 outline-none focus:ring-2 focus:ring-red-500 ${
@@ -909,74 +891,6 @@ const closeSearchModal = () => {
           </button>
         )}
       </div>
-          
-      {search.trim() && (
-  <div className="mt-6">
-    <p
-      className={`mb-4 text-sm font-bold ${
-        isDark
-          ? "text-gray-300"
-          : "text-slate-600"
-      }`}
-    >
-      Search Results
-    </p>
-
-      {searchResults.length > 0 ? (
-        <div className="space-y-3">
-          {searchResults.slice(0, 5).map((movie) => (
-            <button
-              key={movie.id}
-              type="button"
-              onClick={() => {
-                setSelectedMovie(movie)
-                commitSearch(search)
-                closeSearchModal()
-              }}
-              className={`flex w-full items-center gap-4 rounded-2xl p-3 text-left transition hover:scale-[1.01] ${
-                isDark
-                  ? "bg-white/5 hover:bg-white/10"
-                  : "bg-slate-100 hover:bg-slate-200"
-              }`}
-            >
-              <img
-                src={movie.image.medium}
-                alt={movie.name}
-                className="h-16 w-12 rounded-lg object-cover"
-              />
-
-              <div className="flex-1 overflow-hidden">
-                <h3 className="truncate font-bold">
-                  {movie.name}
-                </h3>
-
-                <p
-                  className={`mt-1 text-sm ${
-                    isDark
-                      ? "text-gray-400"
-                      : "text-slate-500"
-                  }`}
-                >
-                  ⭐ {movie.rating.average} •{" "}
-                  {movie.genres.join(", ")}
-                </p>
-              </div>
-            </button>
-          ))}
-        </div>
-      ) : (
-        <div
-          className={`rounded-2xl p-4 text-sm ${
-            isDark
-              ? "bg-white/5 text-gray-400"
-              : "bg-slate-100 text-slate-500"
-          }`}
-        >
-          No movies found.
-        </div>
-      )}
-    </div>
-  )}
 
       {recentSearches.length > 0 && (
         <div className="mt-5">

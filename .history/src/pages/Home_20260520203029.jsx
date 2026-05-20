@@ -440,8 +440,6 @@ function Home({ theme, language, activePage, onNavigate }) {
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchClose, setClosingSearch] = useState(false)
   const [showSearchModal, setShowSearchModal] = useState(false)
-  const [searchCommitted, setSearchCommitted] = useState(false)
-  const [lastSearch, setLastSearch] = useState("")
   const [recentSearches, setRecentSearches] = useState([])
 
 useEffect(() => {
@@ -496,27 +494,20 @@ const handleSearchChange = (value) => {
   setSearch(value)
 }
 
-const commitSearch = (value) => {
-  const cleaned = value.trim()
-  if (!cleaned) return
+const commitSearch = (keyword) => {
+  const trimmed = keyword.trim()
+  if (!trimmed) return
 
-  setLastSearch(cleaned)
-  setSearchCommitted(true)
-  setSearch(cleaned)
-
-  setRecentSearches(prev => {
+  setRecentSearches((prev) => {
     const updated = [
-      cleaned,
-      ...prev.filter(i => i.toLowerCase() !== cleaned.toLowerCase())
+      trimmed,
+      ...prev.filter(
+        (item) => item.toLowerCase() !== trimmed.toLowerCase()
+      ),
     ]
+
     return updated.slice(0, 5)
   })
-}
-
-const exitSearchMode = () => {
-  setShowSearchModal(false)
-  setSearchCommitted(false)
-  setSearch("")
 }
 
   const genres = useMemo(
@@ -691,14 +682,7 @@ const closeSearchModal = () => {
             <div className="relative">
               <button
                 type="button"
-                onClick={() => {
-                  setShowSearchModal(true)
-
-                  if (searchCommitted) {
-                    setSearch("")        // clear input lama
-                    setSearchCommitted(false)
-                  }
-                }}
+                onClick={() => setShowSearchModal(true)}
                 className={`w-full rounded-2xl border p-4 text-left transition ${
                   isDark
                     ? "border-white/10 bg-black/25 text-gray-400"
@@ -882,10 +866,25 @@ const closeSearchModal = () => {
           onChange={(event) =>
             handleSearchChange(event.target.value)
           }
-          onKeyDown={(event) => {
-            if (event.key === "Enter") {
-              commitSearch(search)
-              closeSearchModal()
+onKeyDown={(event) => {
+  if (event.key === "Enter") {
+    commitSearch(search)
+    closeSearchModal()
+  }
+}}
+
+              setRecentSearches((prev) => {
+                const updated = [
+                  trimmedSearch,
+                  ...prev.filter(
+                    (item) =>
+                      item.toLowerCase() !==
+                      trimmedSearch.toLowerCase()
+                  ),
+                ]
+
+                return updated.slice(0, 5)
+              })
             }
           }}
           className={`w-full rounded-2xl border p-4 pr-12 outline-none focus:ring-2 focus:ring-red-500 ${
@@ -930,7 +929,6 @@ const closeSearchModal = () => {
               type="button"
               onClick={() => {
                 setSelectedMovie(movie)
-                commitSearch(search)
                 closeSearchModal()
               }}
               className={`flex w-full items-center gap-4 rounded-2xl p-3 text-left transition hover:scale-[1.01] ${

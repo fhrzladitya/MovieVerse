@@ -433,7 +433,7 @@ function Home({ theme, language, activePage, onNavigate }) {
   const [apiLoading, setApiLoading] = useState(false)
   const [apiError, setApiError] = useState(false)
   const [apiFetched, setApiFetched] = useState(false)
-  const [search, setSearch] = useState("")
+  const [searchInput, setSearchInput] = useState("")
   const [activeGenre, setActiveGenre] = useState("All")
   const [onlyHighRated, setOnlyHighRated] = useState(false)
   const [selectedMovie, setSelectedMovie] = useState(null)
@@ -441,7 +441,7 @@ function Home({ theme, language, activePage, onNavigate }) {
   const [searchClose, setClosingSearch] = useState(false)
   const [showSearchModal, setShowSearchModal] = useState(false)
   const [searchCommitted, setSearchCommitted] = useState(false)
-  const [lastSearch, setLastSearch] = useState("")
+  const [activeSearch, setActiveSearch] = useState("")
   const [recentSearches, setRecentSearches] = useState([])
 
 useEffect(() => {

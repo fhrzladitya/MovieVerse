@@ -694,11 +694,11 @@ const closeSearchModal = () => {
                 onClick={() => {
                   setShowSearchModal(true)
 
-                  if (searchCommitted) {
-                    setSearch("")        // clear input lama
-                    setSearchCommitted(false)
-                  }
-                }}
+  if (searchCommitted) {
+    setSearch("")        // clear input lama
+    setSearchCommitted(false)
+  }
+}}
                 className={`w-full rounded-2xl border p-4 text-left transition ${
                   isDark
                     ? "border-white/10 bg-black/25 text-gray-400"
