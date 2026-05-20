@@ -31,6 +31,9 @@ function Navbar({
   const text = navText[language]
   const isDark = theme === "dark"
 
+  // =========================
+  // SCROLL ANIMATION
+  // =========================
   const [showNavbar, setShowNavbar] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
 

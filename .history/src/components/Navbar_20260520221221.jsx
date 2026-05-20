@@ -31,6 +31,9 @@ function Navbar({
   const text = navText[language]
   const isDark = theme === "dark"
 
+  // =========================
+  // SCROLL ANIMATION
+  // =========================
   const [showNavbar, setShowNavbar] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
 
@@ -38,10 +41,12 @@ function Navbar({
     const handleScroll = () => {
       const currentScrollY = window.scrollY
 
+      // selalu tampil di atas
       if (currentScrollY <= 10) {
         setShowNavbar(true)
       }
 
+      // scroll ke bawah = hide
       else if (currentScrollY > lastScrollY) {
         setShowNavbar(false)
       }

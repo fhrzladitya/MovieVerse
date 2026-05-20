@@ -31,6 +31,9 @@ function Navbar({
   const text = navText[language]
   const isDark = theme === "dark"
 
+  // =========================
+  // SCROLL ANIMATION
+  // =========================
   const [showNavbar, setShowNavbar] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
 
@@ -38,14 +41,17 @@ function Navbar({
     const handleScroll = () => {
       const currentScrollY = window.scrollY
 
+      // selalu tampil di atas
       if (currentScrollY <= 10) {
         setShowNavbar(true)
       }
 
+      // scroll ke bawah = hide
       else if (currentScrollY > lastScrollY) {
         setShowNavbar(false)
       }
 
+      // scroll ke atas = show
       else {
         setShowNavbar(true)
       }
@@ -105,8 +111,10 @@ function Navbar({
     >
       <div className="max-w-7xl mx-auto px-5 sm:px-4 md:px-5">
 
+        {/* MOBILE */}
         <div className="flex flex-col gap-3 py-3 md:hidden">
 
+          {/* LOGO */}
           <button
             type="button"
             onClick={() => onNavigate("home")}
@@ -127,8 +135,10 @@ function Navbar({
             MovieVerse
           </button>
 
+          {/* NAV + TOGGLE */}
           <div className="flex items-center justify-between gap-3">
 
+            {/* MENU */}
             <nav className="flex items-center gap-2">
               {Object.entries(text.pages).map(([page, label]) => (
                 <button
@@ -142,8 +152,10 @@ function Navbar({
               ))}
             </nav>
 
+            {/* TOGGLES */}
             <div className="flex items-center gap-2 shrink-0">
 
+              {/* LANGUAGE */}
               <button
                 type="button"
                 onClick={onToggleLanguage}
