@@ -38,6 +38,7 @@ function Navbar({ theme, language, activePage, onNavigate, onToggleTheme, onTogg
           : "border-slate-900/10 bg-white/45 text-slate-950"
       }`}
     >
+   
       <div className="max-w-7xl mx-auto grid grid-cols-12 items-center px-4 py-3 md:px-5 md:py-4 gap-2">
         
         <div className="col-span-4 md:col-span-3 flex items-center">

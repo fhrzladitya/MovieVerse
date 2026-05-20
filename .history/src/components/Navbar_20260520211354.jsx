@@ -38,8 +38,10 @@ function Navbar({ theme, language, activePage, onNavigate, onToggleTheme, onTogg
           : "border-slate-900/10 bg-white/45 text-slate-950"
       }`}
     >
+      {/* Container utama menggunakan grid agar 3 bagian (Logo, Menu, Action) terbagi adil */}
       <div className="max-w-7xl mx-auto grid grid-cols-12 items-center px-4 py-3 md:px-5 md:py-4 gap-2">
         
+        {/* Kolom Kiri: Logo/Brand */}
         <div className="col-span-4 md:col-span-3 flex items-center">
           <button
             type="button"
@@ -50,6 +52,7 @@ function Navbar({ theme, language, activePage, onNavigate, onToggleTheme, onTogg
           </button>
         </div>
 
+        {/* Kolom Tengah: Navigasi Halaman (Scrollable secara horizontal di HP agar tidak patah ke bawah) */}
         <nav className="col-span-8 md:col-span-6 flex justify-start md:justify-center items-center gap-1 md:gap-2 overflow-x-auto no-scrollbar py-1 order-2 sm:order-none">
           {Object.entries(text.pages).map(([page, label]) => (
             <button key={page} type="button" onClick={() => onNavigate(page)} className={navButtonClass(page)}>
