@@ -466,16 +466,16 @@ function Home({ theme, language, activePage, onNavigate }) {
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [searchCommitted, setSearchCommitted] = useState(false);
   const [lastSearch, setLastSearch] = useState("");
-  const [recentSearches, setRecentSearches] = useState(() => {
-    const saved = localStorage.getItem("recent-searches");
-    return saved ? JSON.parse(saved) : [];
-  });
+ const [recentSearches, setRecentSearches] = useState(() => {
+   const saved = localStorage.getItem("recent-searches");
+   return saved ? JSON.parse(saved) : [];
+ });
   const heroRef = useRef(null);
   const [scrollY, setScrollY] = useState(0);
   const [pageTransition, setPageTransition] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(true);
 
-  useEffect(() => {
+useEffect(() => {
     if ("scrollRestoration" in history) {
       history.scrollRestoration = "manual";
     }

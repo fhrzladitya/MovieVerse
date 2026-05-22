@@ -466,16 +466,13 @@ function Home({ theme, language, activePage, onNavigate }) {
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [searchCommitted, setSearchCommitted] = useState(false);
   const [lastSearch, setLastSearch] = useState("");
-  const [recentSearches, setRecentSearches] = useState(() => {
-    const saved = localStorage.getItem("recent-searches");
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [recentSearches, setRecentSearches] = useState([]);
   const heroRef = useRef(null);
   const [scrollY, setScrollY] = useState(0);
   const [pageTransition, setPageTransition] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(true);
 
-  useEffect(() => {
+useEffect(() => {
     if ("scrollRestoration" in history) {
       history.scrollRestoration = "manual";
     }
@@ -493,38 +490,31 @@ function Home({ theme, language, activePage, onNavigate }) {
     if (activePage !== "api" || apiFetched) return;
 
     let isMounted = true;
+    setApiLoading(true);
 
-    const fetchApiData = async () => {
-      setApiLoading(true);
+    const minimumLoadingTime = new Promise((resolve) =>
+      setTimeout(resolve, 1200),
+    );
 
-      try {
-        const minimumLoadingTime = new Promise((resolve) =>
-          setTimeout(resolve, 1200),
-        );
-
-        const [response] = await Promise.all([
-          axios.get("https://api.tvmaze.com/shows?page=1"),
-          minimumLoadingTime,
-        ]);
-
-        if (isMounted) {
-          setApiItems(response.data.slice(0, 10));
-          setApiError(false);
-        }
-      } catch {
-        if (isMounted) {
-          setApiItems(fallbackShows);
-          setApiError(true);
-        }
-      } finally {
-        if (isMounted) {
-          setApiLoading(false);
-          setApiFetched(true);
-        }
-      }
-    };
-
-    fetchApiData();
+    Promise.all([
+      axios.get("https://api.tvmaze.com/shows?page=1"),
+      minimumLoadingTime,
+    ])
+      .then(([response]) => {
+        if (!isMounted) return;
+        setApiItems(response.data.slice(0, 10));
+        setApiError(false);
+      })
+      .catch(() => {
+        if (!isMounted) return;
+        setApiItems(fallbackShows);
+        setApiError(true);
+      })
+      .finally(() => {
+        if (!isMounted) return;
+        setApiLoading(false);
+        setApiFetched(true);
+      });
 
     return () => {
       isMounted = false;

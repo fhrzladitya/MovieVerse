@@ -518,7 +518,7 @@ function Home({ theme, language, activePage, onNavigate }) {
         }
       } finally {
         if (isMounted) {
-          setApiLoading(false);
+          setApiLoading(false);np
           setApiFetched(true);
         }
       }

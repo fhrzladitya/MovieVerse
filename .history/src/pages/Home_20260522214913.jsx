@@ -475,7 +475,7 @@ function Home({ theme, language, activePage, onNavigate }) {
   const [pageTransition, setPageTransition] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(true);
 
-  useEffect(() => {
+useEffect(() => {
     if ("scrollRestoration" in history) {
       history.scrollRestoration = "manual";
     }
