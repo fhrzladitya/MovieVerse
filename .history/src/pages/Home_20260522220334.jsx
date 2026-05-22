@@ -954,29 +954,19 @@ function Home({ theme, language, activePage, onNavigate }) {
                     </h2>
                   </div>
 
-                  <>
-                    <div className="hidden md:grid gap-8 lg:grid-cols-3 xl:grid-cols-5">
-                      {category.data.map((movie) => (
-                        <MovieCard
-                          key={movie.id}
-                          movie={movie}
-                          text={text}
-                          isDark={isDark}
-                          getGenreLabel={getGenreLabel}
-                          onSelect={setSelectedMovie}
-                          compact
-                        />
-                      ))}
-                    </div>
-
-                    <MobileCarousel
-                      movies={category.data}
-                      text={text}
-                      isDark={isDark}
-                      getGenreLabel={getGenreLabel}
-                      onSelect={setSelectedMovie}
-                    />
-                  </>
+                  <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+                    {category.data.map((movie) => (
+                      <MovieCard
+                        key={movie.id}
+                        movie={movie}
+                        text={text}
+                        isDark={isDark}
+                        getGenreLabel={getGenreLabel}
+                        onSelect={setSelectedMovie}
+                        compact
+                      />
+                    ))}
+                  </div>
                 </div>
               ))}
             </div>
@@ -1472,63 +1462,6 @@ function MovieCard({
         </button>
       </div>
     </article>
-  );
-}
-
-function MobileCarousel({ movies, text, isDark, getGenreLabel, onSelect }) {
-  const scrollRef = useRef(null);
-  const [activeIndex, setActiveIndex] = useState(0);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setActiveIndex(Number(entry.target.dataset.index));
-          }
-        });
-      },
-      {
-        root: scrollRef.current,
-        rootMargin: "0px -50% 0px -50%",
-      },
-    );
-
-    const cards = scrollRef.current?.querySelectorAll(".carousel-card");
-    cards?.forEach((card) => observer.observe(card));
-
-    return () => observer.disconnect();
-  }, [movies]);
-
-  return (
-    <div
-      ref={scrollRef}
-      className="flex w-full snap-x snap-mandatory overflow-x-auto scrollbar-hide py-10 px-[calc(50%-120px)] gap-4 md:hidden"
-    >
-      {movies.map((movie, index) => {
-        const isCenter = activeIndex === index;
-        return (
-          <div
-            key={movie.id}
-            data-index={index}
-            className={`carousel-card shrink-0 w-[240px] snap-center transition-all duration-300 ease-out ${
-              isCenter
-                ? "scale-105 opacity-100 z-10"
-                : "scale-90 opacity-40 z-0"
-            }`}
-          >
-            <MovieCard
-              movie={movie}
-              text={text}
-              isDark={isDark}
-              getGenreLabel={getGenreLabel}
-              onSelect={onSelect}
-              compact
-            />
-          </div>
-        );
-      })}
-    </div>
   );
 }
 

@@ -272,9 +272,6 @@ const translations = {
     freeShort: "Gratis",
     explore: "Jelajahi Film",
     popularThisWeek: "Populer Minggu Ini",
-    categoryTopRated: "Rating Tertinggi",
-    categoryBlockbuster: "Blockbuster & Superhit",
-    categoryNew: "Rilis Terbaru & Sedang Tren",
     trendingSubtitle:
       "5 film favorit dengan rating dan tren terbaik di MovieVerse.",
     movieFound: "film ditemukan",
@@ -368,9 +365,6 @@ const translations = {
     freeShort: "Free",
     explore: "Explore Movies",
     popularThisWeek: "Popular This Week",
-    categoryTopRated: "Top Rated",
-    categoryBlockbuster: "Blockbusters & Superhits",
-    categoryNew: "New Releases & Trending",
     trendingSubtitle:
       "5 favorite movies with the strongest ratings and trend signals in MovieVerse.",
     movieFound: "movie found",
@@ -598,44 +592,16 @@ function Home({ theme, language, activePage, onNavigate }) {
   );
 
   const featuredMovie = movieData[0];
-
-  const topRatedMovies = useMemo(
+  const trendingMovies = useMemo(
     () =>
       [...movieData]
-        .sort((first, second) => second.rating.average - first.rating.average)
-        .slice(0, 5),
-    [],
-  );
-
-  const blockbusterMovies = useMemo(
-    () =>
-      [...movieData]
-        .filter((movie) =>
-          ["Blockbuster", "Action Hit", "Epic", "Fan Favorite"].includes(
-            movie.badge,
-          ),
+        .sort(
+          (firstMovie, secondMovie) =>
+            secondMovie.rating.average - firstMovie.rating.average,
         )
         .slice(0, 5),
     [],
   );
-
-  const newArrivals = useMemo(
-    () =>
-      [...movieData]
-        .filter((movie) => ["New", "Trending"].includes(movie.badge))
-        .slice(0, 5),
-    [],
-  );
-
-  const homeCategories = [
-    { id: "topRated", title: text.categoryTopRated, data: topRatedMovies },
-    {
-      id: "blockbuster",
-      title: text.categoryBlockbuster,
-      data: blockbusterMovies,
-    },
-    { id: "newArrivals", title: text.categoryNew, data: newArrivals },
-  ];
 
   const closeSearchModal = () => {
     setClosingSearch(true);
@@ -672,6 +638,7 @@ function Home({ theme, language, activePage, onNavigate }) {
 
   return (
     <>
+      {/* SPLASH SCREEN LOADING (Jalan setiap kali app di-refresh) */}
       {isRefreshing && (
         <div
           className={`fixed inset-0 z-[200] flex flex-col items-center justify-center transition-opacity duration-300 ${
@@ -944,41 +911,36 @@ function Home({ theme, language, activePage, onNavigate }) {
               />
             </div>
 
-            <div className="flex flex-col gap-16">
-              {homeCategories.map((category) => (
-                <div key={category.id}>
-                  <div className="mb-8 flex items-center gap-4">
-                    <div className="h-8 w-2 rounded-full bg-red-500"></div>
-                    <h2 className="text-2xl font-extrabold tracking-tight md:text-3xl">
-                      {category.title}
-                    </h2>
-                  </div>
-
-                  <>
-                    <div className="hidden md:grid gap-8 lg:grid-cols-3 xl:grid-cols-5">
-                      {category.data.map((movie) => (
-                        <MovieCard
-                          key={movie.id}
-                          movie={movie}
-                          text={text}
-                          isDark={isDark}
-                          getGenreLabel={getGenreLabel}
-                          onSelect={setSelectedMovie}
-                          compact
-                        />
-                      ))}
-                    </div>
-
-                    <MobileCarousel
-                      movies={category.data}
-                      text={text}
-                      isDark={isDark}
-                      getGenreLabel={getGenreLabel}
-                      onSelect={setSelectedMovie}
-                    />
-                  </>
+            <div>
+              <div className="mb-7 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+                <div>
+                  <p
+                    className={`mb-2 text-sm font-bold uppercase tracking-[0.25em] ${isDark ? "text-red-300" : "text-red-500"}`}
+                  >
+                    {text.explore}
+                  </p>
+                  <h2 className="text-3xl font-extrabold md:text-4xl">
+                    {text.popularThisWeek}
+                  </h2>
                 </div>
-              ))}
+                <p className={`max-w-xl text-sm leading-relaxed ${subtleText}`}>
+                  {text.trendingSubtitle}
+                </p>
+              </div>
+
+              <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+                {trendingMovies.map((movie) => (
+                  <MovieCard
+                    key={movie.id}
+                    movie={movie}
+                    text={text}
+                    isDark={isDark}
+                    getGenreLabel={getGenreLabel}
+                    onSelect={setSelectedMovie}
+                    compact
+                  />
+                ))}
+              </div>
             </div>
           </section>
         )}
@@ -1025,7 +987,7 @@ function Home({ theme, language, activePage, onNavigate }) {
                     type="button"
                     onClick={() => {
                       setSearch("");
-                      setLastSearch("");
+                      setLastSearch(""); // Tambahkan ini untuk mereset filter background
                       setSearchCommitted(false);
                     }}
                     className={`absolute right-4 top-1/2 -translate-y-1/2 text-lg font-bold transition ${
@@ -1220,6 +1182,8 @@ function Home({ theme, language, activePage, onNavigate }) {
           </div>
         </footer>
       </main>
+
+      {/* --- MODAL AREA (DI LUAR MAIN) --- */}
 
       {selectedMovie && (
         <MovieModal
@@ -1472,63 +1436,6 @@ function MovieCard({
         </button>
       </div>
     </article>
-  );
-}
-
-function MobileCarousel({ movies, text, isDark, getGenreLabel, onSelect }) {
-  const scrollRef = useRef(null);
-  const [activeIndex, setActiveIndex] = useState(0);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setActiveIndex(Number(entry.target.dataset.index));
-          }
-        });
-      },
-      {
-        root: scrollRef.current,
-        rootMargin: "0px -50% 0px -50%",
-      },
-    );
-
-    const cards = scrollRef.current?.querySelectorAll(".carousel-card");
-    cards?.forEach((card) => observer.observe(card));
-
-    return () => observer.disconnect();
-  }, [movies]);
-
-  return (
-    <div
-      ref={scrollRef}
-      className="flex w-full snap-x snap-mandatory overflow-x-auto scrollbar-hide py-10 px-[calc(50%-120px)] gap-4 md:hidden"
-    >
-      {movies.map((movie, index) => {
-        const isCenter = activeIndex === index;
-        return (
-          <div
-            key={movie.id}
-            data-index={index}
-            className={`carousel-card shrink-0 w-[240px] snap-center transition-all duration-300 ease-out ${
-              isCenter
-                ? "scale-105 opacity-100 z-10"
-                : "scale-90 opacity-40 z-0"
-            }`}
-          >
-            <MovieCard
-              movie={movie}
-              text={text}
-              isDark={isDark}
-              getGenreLabel={getGenreLabel}
-              onSelect={onSelect}
-              compact
-            />
-          </div>
-        );
-      })}
-    </div>
   );
 }
 
